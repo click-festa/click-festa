@@ -47,34 +47,28 @@ const gallery = document.getElementById("gallery");
 
 // ===== ① 期限チェック =====
 async function checkExpiration() {
-
+  try {
   const docRef = doc(db, "events", id);
   const docSnap = await getDoc(docRef);
-
-  let startDate;
-
+    
   if (!docSnap.exists()) {
-    startDate = new Date().toISOString();
-
-    await setDoc(docRef, {
-      startDate: startDate
-    });
-
-  } else {
-    startDate = docSnap.data().startDate;
-  }
-
-  const start = new Date(startDate);
-  const now = new Date();
-
-  const diffDays = (now - start) / (1000 * 60 * 60 * 24);
-
-  if (diffDays > 3) {
-    document.body.innerHTML = "<h1>Expirado</h1><p>Este QR expirou</p>";
+    document.getElementById("loading").innerText="Evento não encontrado"
     return false;
   }
+    const data= docSnap.data();
+    
+    const now= Date.now();
 
-  return true;
+    if (now> data.expiresAt){
+      document.body.innerHTML = "<h1> Expirado</h1><p>Este QR expirou</p>";
+      return false;
+      return true;
+      
+} catch (e) {
+    console.error(e)
+    document.getElementById("loading").innerText = "Erro ao carregar";
+    return false;
+  }
 }
 
 // ===== ② 画像読み込み =====
