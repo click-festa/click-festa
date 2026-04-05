@@ -85,7 +85,8 @@ async function checkExpiration() {
       document.body.innerHTML = "<h1>Expirado</h1>";
       throw new Error ("expired");
     }
-
+    document.getElementById("loading").innerText = "";
+    loadGallery();
     return true;
 
   } catch (e) {
