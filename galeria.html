@@ -1,9 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GALERIA</title>
+<style>
+  body {
+    text-align: center;
+    background: #f4ecd8;
+    font-family: sans-serif;
+  }
+  #gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 10px;
+  }
+  .frame {
+    background: #fff;
+    padding: 10px;
+    padding-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .frame img {
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .frame:hover {
+    transform: scale(1.05) rotate(0deg);
+  }
+</style>
+</head>
+
+<body>
+<p id="loading">CARREGANDO...</p>
+<h1>📸 AS FOTOS DE TUDOS</h1>
+
+<div id="gallery"></div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// ===== Firebase 設定 =====
 const firebaseConfig = {
   apiKey: "AIzaSyAy-fte7-6MboK9YKBnDfKebpnPGIA1FvY",
   authDomain: "click-festa.firebaseapp.com",
@@ -17,13 +61,13 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
-// ===== ID取得 =====
+// ===== URL パラメータで ID 取得 =====
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id") || "default";
 
 const gallery = document.getElementById("gallery");
 
-// ===== ① 期限チェック =====
+// ===== ① 有効期限チェック =====
 async function checkExpiration() {
   try {
     const docRef = doc(db, "events", id);
@@ -45,8 +89,8 @@ async function checkExpiration() {
     return true;
 
   } catch (e) {
-    console.error(e);
-    document.getElementById("loading").innerText = "Erro ao carregar";
+    console.error("Firestore エラー:", e);
+    document.getElementById("loading").innerText = "Erro ao carregar dados do evento";
     return false;
   }
 }
@@ -57,26 +101,23 @@ async function loadImages() {
     const listRef = ref(storage, id);
     const res = await listAll(listRef);
 
-    const items = res.items.sort((a, b) => {
-      return b.name.localeCompare(a.name);
-    });
+    if (res.items.length === 0) {
+      document.getElementById("loading").innerText = "Nenhuma imagem encontrada";
+      return;
+    }
+
+    const items = res.items.sort((a, b) => b.name.localeCompare(a.name));
 
     for (const item of items) {
       const url = await getDownloadURL(item);
 
       const frame = document.createElement("div");
-      frame.style.background = "#fff";
-      frame.style.padding = "10px";
-      frame.style.paddingBottom = "30px";
-      frame.style.borderRadius = "10px";
-      frame.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
+      frame.classList.add("frame");
       frame.style.transform = `rotate(${Math.random()*6 - 3}deg)`;
 
       const img = document.createElement("img");
       img.src = url;
-      img.style.width = "100%";
-      img.style.borderRadius = "5px";
-
+      img.alt = "Foto do evento";
       img.onclick = () => window.open(url, "_blank");
 
       frame.appendChild(img);
@@ -86,15 +127,22 @@ async function loadImages() {
     document.getElementById("loading")?.remove();
 
   } catch (e) {
-    console.error(e);
+    console.error("Storage エラー:", e);
     document.getElementById("loading").innerText = "Erro ao carregar imagens";
   }
 }
 
-// ===== 実行 =====
-const valid = await checkExpiration();
-if (valid) {
-  loadImages();
+// ===== ③ 初期化 =====
+async function initGallery() {
+  const valid = await checkExpiration();
+  if (valid) {
+    await loadImages();
+  }
 }
 
+// ページ読み込み後に実行
+window.addEventListener("DOMContentLoaded", initGallery);
+
 </script>
+</body>
+</html>
