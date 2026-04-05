@@ -24,10 +24,15 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     transition: transform 0.2s;
   }
+  img {
+    max-width:100%;
+    height: auto;
+    display:block;
+  }
   .frame img {
     width: 100%;
-    border-radius: 5px;
-    cursor: pointer;
+    height: auto;
+    object-fit:cover;
   }
   .frame:hover {
     transform: scale(1.05) rotate(0deg);
