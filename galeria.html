@@ -1,30 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GALERIA</title>
-</head>
-
-<body style="text-align:center; background:#f4ecd8;">
-<p id="loading">CARREGANDO...</p>
-<h1>📸 AS FOTOS DE TUDOS</h1>
-
-<div>
-<div id="gallery" style="
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap:10px;
-  padding:10px;
-"></div>
-</div>
-
-
-  <script type="module">
+<script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSy...",
@@ -48,24 +26,26 @@ const gallery = document.getElementById("gallery");
 // ===== ① 期限チェック =====
 async function checkExpiration() {
   try {
-  const docRef = doc(db, "events", id);
-  const docSnap = await getDoc(docRef);
-    
-  if (!docSnap.exists()) {
-    document.getElementById("loading").innerText="Evento não encontrado"
-    return false;
-  }
-    const data= docSnap.data();
-    
-    const now= Date.now();
+    const docRef = doc(db, "events", id);
+    const docSnap = await getDoc(docRef);
 
-    if (now> data.expiresAt){
-      document.body.innerHTML = "<h1> Expirado</h1><p>Este QR expirou</p>";
+    if (!docSnap.exists()) {
+      document.getElementById("loading").innerText = "Evento não encontrado";
       return false;
-      return true;
-      
-} catch (e) {
-    console.error(e)
+    }
+
+    const data = docSnap.data();
+    const now = Date.now();
+
+    if (now > data.expiresAt) {
+      document.body.innerHTML = "<h1>Expirado</h1><p>Este QR expirou</p>";
+      return false;
+    }
+
+    return true;
+
+  } catch (e) {
+    console.error(e);
     document.getElementById("loading").innerText = "Erro ao carregar";
     return false;
   }
@@ -73,38 +53,42 @@ async function checkExpiration() {
 
 // ===== ② 画像読み込み =====
 async function loadImages() {
+  try {
+    const listRef = ref(storage, id);
+    const res = await listAll(listRef);
 
-  const listRef = ref(storage, id);
-  const res = await listAll(listRef);
+    const items = res.items.sort((a, b) => {
+      return b.name.localeCompare(a.name);
+    });
 
-  const items = res.items.sort((a, b) => {
-    return b.name.localeCompare(a.name);
-  });
+    for (const item of items) {
+      const url = await getDownloadURL(item);
 
-  for (const item of items) {
+      const frame = document.createElement("div");
+      frame.style.background = "#fff";
+      frame.style.padding = "10px";
+      frame.style.paddingBottom = "30px";
+      frame.style.borderRadius = "10px";
+      frame.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
+      frame.style.transform = `rotate(${Math.random()*6 - 3}deg)`;
 
-    const url = await getDownloadURL(item);
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.width = "100%";
+      img.style.borderRadius = "5px";
 
-    const frame = document.createElement("div");
-    frame.style.background = "#fff";
-    frame.style.padding = "10px";
-    frame.style.paddingBottom = "30px";
-    frame.style.borderRadius = "10px";
-    frame.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
-    frame.style.transform = `rotate(${Math.random()*6 - 3}deg)`;
+      img.onclick = () => window.open(url, "_blank");
 
-    const img = document.createElement("img");
-    img.src = url;
-    img.style.width = "100%";
-    img.style.borderRadius = "5px";
+      frame.appendChild(img);
+      gallery.appendChild(frame);
+    }
 
-    img.onclick = () => window.open(url, "_blank");
+    document.getElementById("loading")?.remove();
 
-    frame.appendChild(img);
-    gallery.appendChild(frame);
+  } catch (e) {
+    console.error(e);
+    document.getElementById("loading").innerText = "Erro ao carregar imagens";
   }
-
-  document.getElementById("loading").remove();
 }
 
 // ===== 実行 =====
@@ -114,5 +98,3 @@ if (valid) {
 }
 
 </script>
-</body>
-</html>
