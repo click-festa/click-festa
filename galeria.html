@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gallery</title>
+</head>
+
+<body style="text-align:center; background:#f4ecd8;">
+<p id="loading">CARREGANDO...</p>
+<h1>📸 AS FOTOS DE TUDOS</h1>
+
+<div>
+<div id="gallery" style="
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap:10px;
+  padding:10px;
+"></div>
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAy-fte7-6MboK9YKBnDfKebpnPGIA1FvY",
+  authDomain: "click-festa.firebaseapp.com",
+  projectId: "click-festa",
+  storageBucket: "click-festa.firebasestorage.app",
+  messagingSenderId: "826663176182",
+  appId: "1:826663176182:web:d148256e828ab07dcaa9d7"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+
+
+// event取得
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event") || "default";
+
+const gallery = document.getElementById("gallery");
+
+async function loadImages() {
+
+  const listRef = ref(storage, eventId);
+  const res = await listAll(listRef);
+
+  const items = res.items.sort((a, b) => {
+    return b.name.localeCompare(a.name);
+  });
+
+  for (const item of items) {
+
+    const url = await getDownloadURL(item);
+
+    // フレーム作成
+    const frame = document.createElement("div");
+    frame.style.background = "#fff";
+    frame.style.padding = "10px";
+    frame.style.paddingBottom = "30px";
+    frame.style.borderRadius = "10px";
+    frame.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
+    frame.style.transform = `rotate(${Math.random()*6 - 3}deg)`;
+
+    // 画像作成
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.width = "100%";
+    img.style.display = "block";
+    img.style.borderRadius = "5px";
+
+    img.onclick = () => {
+      window.open(url, "_blank");
+    };
+
+    frame.appendChild(img);
+    gallery.appendChild(frame);
+  }
+
+  document.getElementById("loading").remove();
+}
+loadImages();
+
+</script>
+
+</body>
+</html>

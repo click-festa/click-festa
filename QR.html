@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="margin:0; font-family:sans-serif;">
+
+<div id="container" style="
+  width:100%;
+  max-width:400px;
+  margin:40px auto;
+  padding:30px;
+  text-align:center;
+  border-radius:20px;
+">
+
+  <h1 id="title"></h1>
+  <p id="subtitle"></p>
+
+  <div id="qrcode" style="margin:20px 0;"></div>
+
+  <p id="url" style="font-size:12px; word-break:break-all;"></p>
+
+</div>
+
+<!-- QRライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+// URLパラメータ取得
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event") || "default";
+const type = params.get("type") || "simple";
+
+// テンプレ定義
+const templates = {
+  simple: {
+    bg: "#ffffff",
+    color: "#333",
+    title: "CLICK FESTA",
+    subtitle: "DIGITALIZE E TIRA FOTOS!"
+  },
+  wedding: {
+    bg: "#fff0f5",
+    color: "#c71585",
+    title: "💍 HAPPY WEDDING",
+    subtitle: "CAPTURE NOSSO DIA ESPECIAL!"
+  },
+  birthday: {
+    bg: "#fff8dc",
+    color: "#ff6600",
+    title: "🎉 HAPPY BIRTHDAY",
+    subtitle: "VAMOS COMEMORAR JUNTOS!!"
+  },
+  party: {
+    bg: "#222",
+    color: "#fff",
+    title: "🔥 PARTY TIME",
+    subtitle: "APPOVEITE E ATIRE!"
+  }
+};
+
+// テンプレ適用
+const t = templates[type] || templates.simple;
+
+const container = document.getElementById("container");
+const title = document.getElementById("title");
+const subtitle = document.getElementById("subtitle");
+
+container.style.background = t.bg;
+title.innerText = t.title;
+title.style.color = t.color;
+subtitle.innerText = t.subtitle;
+
+// URL生成（撮影ページ）
+const url = `${location.origin}/index.html?event=${eventId}`;
+document.getElementById("url").innerText = url;
+
+// QR生成
+QRCode.toCanvas(url, function (err, canvas) {
+  if (err) console.error(err);
+  document.getElementById("qrcode").appendChild(canvas);
+});
+
+</script>
+
+</body>
+</html>

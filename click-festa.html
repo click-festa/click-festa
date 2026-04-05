@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLICK FESTA</title>
+</head>
+
+<body style="background:#f4ecd8; text-align:center; font-family:sans-serif; margin:0; padding:20px;">
+
+<h1>📸 CLICK FESTA</h1>
+
+<p id="counter" style="font-weight:bold; font-size:1.2rem;">NÚMERO RESTANTE: --</p>
+
+<!-- プレビュー画面：少しフィルム風のフィルターを適用 -->
+<video id="video" autoplay playsinline style="width:100%; max-width:400px; filter: sepia(0.3) contrast(1.1) brightness(1.1); border-radius: 15px; background: #333;"></video>
+
+<br><br>
+
+<!-- 撮影ボタン：最初は無効化、カメラ起動後に有効化 -->
+<button id="shootBtn" disabled
+style="
+  padding:15px 40px;
+  font-size:1.2rem;
+  font-weight:bold;
+  background:#ffcc00;
+  color:#333;
+  border:none;
+  border-radius:50px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.2);
+  cursor: pointer;
+">
+  CARREGANDO...
+</button>
+
+<br><br>
+
+<button id="viewBtn" style="display:none; margin: 0 auto; padding:10px 20px; background:none; border:1px solid #999; border-radius:5px;">GALERIA</button>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script type="module">
+// --- Firebase 設定 ---
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getFirestore, doc, getDoc, setDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAy-fte7-6MboK9YKBnDfKebpnPGIA1FvY",
+  authDomain: "click-festa.firebaseapp.com",
+  projectId: "click-festa",
+  storageBucket: "click-festa.firebasestorage.app",
+  messagingSenderId: "826663176182",
+  appId: "1:826663176182:web:d148256e828ab07dcaa9d7"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const db = getFirestore(app);
+
+// --- 変数設定 ---
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event") || "default";
+
+let remaining = parseInt(localStorage.getItem("shots_" + eventId));
+if (isNaN(remaining)) remaining = 5; // 初期値5枚
+
+const counter = document.getElementById("counter");
+const video = document.getElementById("video");
+const shootBtn = document.getElementById("shootBtn");
+const viewBtn = document.getElementById("viewBtn");
+const canvas = document.getElementById("canvas");
+
+counter.innerText = "NÚMERO RESTANTE: " + remaining;
+
+// --- カメラ起動 ---
+navigator.mediaDevices.getUserMedia({ 
+  video: { facingMode: "environment" }, 
+  audio: false 
+})
+.then(stream => {
+  video.srcObject = stream;
+  video.onloadedmetadata = () => {
+    if (remaining > 0) {
+      shootBtn.disabled = false;
+      shootBtn.innerText = "📸 TIRA PHOTOS";
+    } else {
+      showGalleryButton();
+    }
+  };
+})
+.catch(err => {
+  console.error(err);
+  alert("Erro ao acessar a câmera. Verifique se está usando HTTPS.");
+});
+
+// --- 撮影・加工・保存 ---
+shootBtn.onclick = async function () {
+  if (!video.videoWidth || remaining <= 0) return;
+
+  // ボタン連打防止
+  shootBtn.disabled = true;
+  shootBtn.innerText = "ENVIANDO...";
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // 1. 基本フィルター適用
+  ctx.filter = "sepia(0.25) contrast(0.9) brightness(1.15) saturate(1.3)";
+  ctx.drawImage(video, 0, 0);
+  ctx.filter = "none"; // 重ね書きのため解除
+
+  // 2. 周辺光量落ち (Vignette)
+  const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width*0.8);
+  grad.addColorStop(0, "transparent");
+  grad.addColorStop(1, "rgba(0,0,0,0.35)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 3. 粒子ノイズ (Grain)
+  ctx.globalAlpha = 0.05;
+  for (let i = 0; i < 4000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? "#fff" : "#000";
+    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.2, 1.2);
+  }
+  ctx.globalAlpha = 1.0;
+
+  // 4. オレンジの日付スタンプ (右下)
+  const now = new Date();
+  const dateStr = `'${String(now.getFullYear()).slice(-2)} ${now.getMonth()+1} ${now.getDate()}`;
+  ctx.font = `italic bold ${Math.floor(canvas.height * 0.06)}px "Courier New", monospace`;
+  ctx.fillStyle = "rgba(255, 140, 0, 0.9)";
+  ctx.shadowBlur = 3;
+  ctx.shadowColor = "rgba(255, 50, 0, 0.5)";
+  ctx.fillText(dateStr, canvas.width * 0.72, canvas.height * 0.92);
+
+  // 5. Firebaseへアップロード
+  canvas.toBlob(async (blob) => {
+    const storageRef = ref(storage, `${eventId}/${Date.now()}.jpg`);
+    try {
+      await uploadBytes(storageRef, blob);
+      
+      remaining--;
+      localStorage.setItem("shots_" + eventId, remaining);
+      counter.innerText = "NÚMERO RESTANTE: " + remaining;
+
+      if (remaining <= 0) {
+        showGalleryButton();
+        alert("OBRIGADO! TODAS AS FOTOS FORAM TIRADAS.");
+        window.location.href = "gallery.html?event=" + eventId;
+      } else {
+        shootBtn.disabled = false;
+        shootBtn.innerText = "📸 TIRA PHOTOS";
+      }
+    } catch (e) {
+      alert("Erro no upload: " + e.message);
+      shootBtn.disabled = false;
+    }
+  }, "image/jpeg", 0.85);
+};
+
+function showGalleryButton() {
+  shootBtn.style.display = "none";
+  video.style.display = "none";
+  viewBtn.style.display = "block";
+}
+
+viewBtn.onclick = () => window.location.href = "gallery.html?event=" + eventId;
+
+// 
+// --- 期間チェック（Firestore版） ---
+const eventRef = doc(db, "events", eventId);
+const eventSnap = await getDoc(eventRef);
+
+if (!eventSnap.exists()) {
+  const now = Date.now();
+  const threeDays = 3 * 24 * 60 * 60 * 1000;
+
+  await setDoc(eventRef, {
+    createdAt: now,
+    expiresAt: now + threeDays
+  });
+} else {
+  const data = eventSnap.data();
+  const now = Date.now();
+
+  if (now > data.expiresAt) {
+    document.body.innerHTML = `
+      <h1 style="margin-top:100px;">
+        ESTE EVENTO TERMINOU
+      </h1>
+    `;
+    throw new Error("ESTE EVENTO TERMINOU");
+  }
+}
+</script>
+</body>
+</html>
