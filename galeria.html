@@ -37,7 +37,7 @@
 
 <body>
 <p id="loading">CARREGANDO...</p>
-<h1>📸 AS FOTOS DE TUDOS</h1>
+<h1>📸 AS FOTOS DE TODOS</h1>
 
 <div id="gallery"></div>
 
@@ -74,16 +74,16 @@ async function checkExpiration() {
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      document.getElementById("loading").innerText = "Evento não encontrado";
-      return false;
-    }
-
+      document.body.innerHTML = "<h1>Erro</h1>";
+      throw new Error("no data");
+     }
     const data = docSnap.data();
-    const now = Date.now();
+    const expires = data.expiresAT.toDate();
+    const now = now Date();
 
-    if (now > data.expiresAt) {
-      document.body.innerHTML = "<h1>Expirado</h1><p>Este QR expirou</p>";
-      return false;
+    if (now > expires) {
+      document.body.innerHTML = "<h1>Expirado</h1>";
+      throw new Error ("expired");
     }
 
     return true;
