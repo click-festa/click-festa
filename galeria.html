@@ -91,7 +91,7 @@ async function checkExpiration() {
       throw new Error ("expired");
     }
     document.getElementById("loading").innerText = "";
-    loadGallery();
+    loadImages();
     return true;
 
   } catch (e) {
