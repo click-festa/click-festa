@@ -91,7 +91,7 @@ async function checkExpiration() {
       throw new Error ("expired");
     }
     document.getElementById("loading").innerText = "";
-    loadImages();
+    await loadImages();
     return true;
 
   } catch (e) {
@@ -141,8 +141,7 @@ async function loadImages() {
 // ===== ③ 初期化 =====
 async function initGallery() {
   const valid = await checkExpiration();
-  if (valid) {
-    await loadImages();
+  if (valid) {ß
   }
 }
 
