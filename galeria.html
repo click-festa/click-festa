@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GALERIA</title>
 </head>
 
 <body style="text-align:center; background:#f4ecd8;">
@@ -19,13 +20,14 @@
 </div>
 
 
-<script type="module">
+  <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAy-fte7-6MboK9YKBnDfKebpnPGIA1FvY",
+  apiKey: "AIzaSy...",
   authDomain: "click-festa.firebaseapp.com",
   projectId: "click-festa",
   storageBucket: "click-festa.firebasestorage.app",
@@ -35,17 +37,50 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
+const db = getFirestore(app);
 
-
-// event取得
+// ===== ID取得 =====
 const params = new URLSearchParams(window.location.search);
-const eventId = params.get("event") || "default";
+const id = params.get("id") || "default";
 
 const gallery = document.getElementById("gallery");
 
+// ===== ① 期限チェック =====
+async function checkExpiration() {
+
+  const docRef = doc(db, "events", id);
+  const docSnap = await getDoc(docRef);
+
+  let startDate;
+
+  if (!docSnap.exists()) {
+    startDate = new Date().toISOString();
+
+    await setDoc(docRef, {
+      startDate: startDate
+    });
+
+  } else {
+    startDate = docSnap.data().startDate;
+  }
+
+  const start = new Date(startDate);
+  const now = new Date();
+
+  const diffDays = (now - start) / (1000 * 60 * 60 * 24);
+
+  if (diffDays > 3) {
+    document.body.innerHTML = "<h1>Expirado</h1><p>Este QR expirou</p>";
+    return false;
+  }
+
+  return true;
+}
+
+// ===== ② 画像読み込み =====
 async function loadImages() {
 
-  const listRef = ref(storage, eventId);
+  const listRef = ref(storage, id);
   const res = await listAll(listRef);
 
   const items = res.items.sort((a, b) => {
@@ -56,7 +91,6 @@ async function loadImages() {
 
     const url = await getDownloadURL(item);
 
-    // フレーム作成
     const frame = document.createElement("div");
     frame.style.background = "#fff";
     frame.style.padding = "10px";
@@ -65,16 +99,12 @@ async function loadImages() {
     frame.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
     frame.style.transform = `rotate(${Math.random()*6 - 3}deg)`;
 
-    // 画像作成
     const img = document.createElement("img");
     img.src = url;
     img.style.width = "100%";
-    img.style.display = "block";
     img.style.borderRadius = "5px";
 
-    img.onclick = () => {
-      window.open(url, "_blank");
-    };
+    img.onclick = () => window.open(url, "_blank");
 
     frame.appendChild(img);
     gallery.appendChild(frame);
@@ -82,9 +112,13 @@ async function loadImages() {
 
   document.getElementById("loading").remove();
 }
-loadImages();
+
+// ===== 実行 =====
+const valid = await checkExpiration();
+if (valid) {
+  loadImages();
+}
 
 </script>
-
 </body>
 </html>
