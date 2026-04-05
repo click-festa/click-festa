@@ -78,8 +78,8 @@ async function checkExpiration() {
       throw new Error("no data");
      }
     const data = docSnap.data();
-    const expires = data.expiresAT.toDate();
-    const now = now Date();
+    const expires = data.expiresAt.toDate();
+    const now = new Date();
 
     if (now > expires) {
       document.body.innerHTML = "<h1>Expirado</h1>";
