@@ -11,16 +11,29 @@
 }
   #shootBtn{
     position:fixed;
-    bottom:20px;
+    bottom:calc(20px + env (safe-area-inset-bottm));
     left:50%;
     transform: translateX(-50%);
     z-index: 9999;
-    padding:20px;
+
+    width:80px;
+    height:80px;
     border-radius:50%;
-    background: black;
-    color: white;
-    font-size: 18px;
+    background: white;
+    border:4px solid rgba(255, 255,255,0.8);
+    box-shadow:0 4px 15px rgba(0,0,0,0.3);
+    padding:0;
   }
+  #shootBtn:actuve .inner-circle{
+    transform: scale (0.8);
+  }
+    .inner-circle{
+      width: 60%;
+      height: 60%;
+      background: black;
+      border-radius: 50%;
+      margin: auto;
+    }
     </style>
   <title>CLICK FESTA</title>
 </head>
@@ -37,22 +50,9 @@
 <br><br>
 
 <!-- 撮影ボタン：最初は無効化、カメラ起動後に有効化 -->
-<button id="shootBtn" disabled
-style="
-  padding:15px 40px;
-  font-size:1.2rem;
-  font-weight:bold;
-  background:#ffcc00;
-  color:#333;
-  border:none;
-  border-radius:50px;
-  box-shadow:0 6px 15px rgba(0,0,0,0.2);
-  cursor: pointer;
-">
-  CARREGANDO...
+<button id="shootBtn" disabled>
+  <div class="inner-circle'></div>
 </button>
-
-<br><br>
 
 <button id="viewBtn" style="display:none; margin: 0 auto; padding:10px 20px; background:none; border:1px solid #999; border-radius:5px;">GALERIA</button>
 
@@ -105,7 +105,6 @@ navigator.mediaDevices.getUserMedia({
   video.onloadedmetadata = () => {
     if (remaining > 0) {
       shootBtn.disabled = false;
-      shootBtn.innerText = "📸 TIRA PHOTOS";
     } else {
       showGalleryButton();
     }
@@ -218,6 +217,5 @@ if (!eventSnap.exists()) {
 }
 
 </script>
-  <button id="shootBtn">📸</button>
 </body>
 </html>
