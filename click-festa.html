@@ -11,7 +11,7 @@
 }
   #shootBtn{
     position:fixed;
-    bottom:calc(20px + env (safe-area-inset-bottm));
+    bottom:calc(20px + env(safe-area-inset-bottom));
     left:50%;
     transform: translateX(-50%);
     z-index: 9999;
@@ -24,8 +24,8 @@
     box-shadow:0 4px 15px rgba(0,0,0,0.3);
     padding:0;
   }
-  #shootBtn:actuve .inner-circle{
-    transform: scale (0.8);
+  #shootBtn:active .inner-circle{
+    transform: scale(0.8);
   }
     .inner-circle{
       width: 60%;
@@ -51,7 +51,7 @@
 
 <!-- 撮影ボタン：最初は無効化、カメラ起動後に有効化 -->
 <button id="shootBtn" disabled>
-  <div class="inner-circle'></div>
+  <div class="inner-circle"></div>
 </button>
 
 <button id="viewBtn" style="display:none; margin: 0 auto; padding:10px 20px; background:none; border:1px solid #999; border-radius:5px;">GALERIA</button>
@@ -121,7 +121,7 @@ shootBtn.onclick = async function () {
 
   // ボタン連打防止
   shootBtn.disabled = true;
-  shootBtn.innerText = "ENVIANDO...";
+  shootBtn.style.opacity = "0.6";
 
   const ctx = canvas.getContext("2d");
   canvas.width = video.videoWidth;
@@ -172,7 +172,6 @@ shootBtn.onclick = async function () {
         window.location.href = "gallery.html?event=" + eventId;
       } else {
         shootBtn.disabled = false;
-        shootBtn.innerText = "📸 TIRA PHOTOS";
       }
     } catch (e) {
       alert("Erro no upload: " + e.message);
