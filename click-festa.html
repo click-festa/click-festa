@@ -6,7 +6,7 @@
   <style>
     video{
   width:100%;
-  height:90vh;
+  height:80vh;
   object-fit: cover;
 }
     </style>
@@ -20,7 +20,7 @@
 <p id="counter" style="font-weight:bold; font-size:1.2rem;">NÚMERO RESTANTE: --</p>
 
 <!-- プレビュー画面：少しフィルム風のフィルターを適用 -->
-<video id="video" autoplay playsinline style="width:100%; max-width:400px; filter: sepia(0.3) contrast(1.1) brightness(1.1); border-radius: 15px; background: #333;"></video>
+<video id="video" autoplay playsinline muted style="width:100%; max-width:400px; filter: sepia(0.3) contrast(1.1) brightness(1.1); border-radius: 15px; background: #333;"></video>
 
 <br><br>
 
@@ -89,6 +89,7 @@ navigator.mediaDevices.getUserMedia({
 })
 .then(stream => {
   video.srcObject = stream;
+  video.play();
   video.onloadedmetadata = () => {
     if (remaining > 0) {
       shootBtn.disabled = false;
