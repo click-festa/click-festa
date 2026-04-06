@@ -9,6 +9,18 @@
   height:70vh;
   object-fit: cover;
 }
+  #shootBtn{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding:20px;
+    border-radius:50%;
+    background: black;
+    color: white;
+    font-size: 18px;
+  }
     </style>
   <title>CLICK FESTA</title>
 </head>
@@ -204,6 +216,8 @@ if (!eventSnap.exists()) {
     throw new Error("ESTE EVENTO TERMINOU");
   }
 }
+
 </script>
+  <button id="shootBtn">📸</button>
 </body>
 </html>
