@@ -80,11 +80,12 @@ const storage = getStorage(app);
 const db = getFirestore(app);
 
 // --- 変数設定 ---
+  localstrage.clear()
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event") || "default";
 
 let remaining = parseInt(localStorage.getItem("shots_" + eventId));
-if (isNaN(remaining)) remaining = 5; // 初期値5枚
+ remaining = 5; // 初期値5枚
 
 const counter = document.getElementById("counter");
 const video = document.getElementById("video");
