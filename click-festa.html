@@ -81,7 +81,7 @@ const storage = getStorage(app);
 const db = getFirestore(app);
 
 // --- 変数設定 ---
-  localstrage.clear()
+
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event") || "default";
 
@@ -109,7 +109,7 @@ let streamStarted = false;
   video.setAttribute("playsinline",true);
         await video.play();
   streamStarted = true;
-  retuen;
+  return;
 }catch (err){
   alert (err.name + ": " + err.message);
   return;
@@ -133,8 +133,8 @@ let streamStarted = false;
   ctx.filter = "none"; // 重ね書きのため解除
     
   remaining--;
-    localStorage.setItem('shots_" + eventId,remaining);
-                         counter.innerText ="NÚMERO RESTANTE: " + remaning;
+    localStorage.setItem("shots_" + eventId,remaining);
+                         counter.innerText ="NÚMERO RESTANTE: " + remaining;
  shootBtn.disabled = false;
     shootBtn.style.opacity = "1";
   };
