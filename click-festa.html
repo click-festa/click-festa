@@ -139,7 +139,7 @@ let streamStarted = false;
     shootBtn.style.opacity = "1";
   };
   // 2. 周辺光量落ち (Vignette)
-  const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width*0.8);
+  const grad = ctx.createRadialGradient (canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width*0.8);
   grad.addColorStop(0, "transparent");
   grad.addColorStop(1, "rgba(0,0,0,0.35)");
   ctx.fillStyle = grad;
