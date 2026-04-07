@@ -1,89 +1,93 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    
-video{
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLICK FESTA</title>
+
+<style>
+body {
+  background:#f4ecd8;
+  text-align:center;
+  margin:0;
+}
+
+video {
   width:100%;
   max-width:400px;
-  height: auto;
-  border-radius:515px;
+  border-radius:15px;
   background:#333;
- 
-#shootBtn{
+}
+
+#shootBtn {
   position:fixed;
   bottom:30px;
-  left:50%
+  left:50%;
   transform:translateX(-50%);
-  width: 80%;
-  height: 80px;
-  background:white;
-  border-radius: 50%;
-  border:4px solid rgba(255,255,255,0.8);
-}
-
-.inner {
-  width:60%;
-  height:60%;
-  background:black;
+  width:80px;
+  height:80px;
   border-radius:50%;
-  margin:auto;
+  background:white;
 }
-  
 </style>
-<title>CLICK FESTA</title>
 </head>
 
-<body style="background:#f4ecd8; text-align:center; font-family:sans-serif; margin:0;">
+<body>
+
 <h1>📸 CLICK FESTA</h1>
+<p id="counter">NÚMERO RESTANTE: 5</p>
 
 <video id="video" autoplay playsinline muted></video>
 
-<button id="shootBtn">
-  <div class="inner"></div>
-</button>
+<button id="shootBtn">●</button>
 
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
 const video = document.getElementById("video");
-const btn = document.getElementById("shootBtn");
+const shootBtn = document.getElementById("shootBtn");
 const canvas = document.getElementById("canvas");
+const counter = document.getElementById("counter");
 
-let started = false;
+let remaining = 5;
+let streamStarted = false;
 
-btn.onclick = async () => {
+// カメラ起動＋撮影
+shootBtn.onclick = async () => {
 
   // ① カメラ起動
-  if (!started) {
+  if (!streamStarted) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { facingMode: "environment" },
         audio: false
       });
 
       video.srcObject = stream;
       await video.play();
 
-      started = true;
+      streamStarted = true;
       return;
 
-    } catch (e) {
-      alert(e.message);
+    } catch (err) {
+      alert(err.name + ": " + err.message);
       return;
     }
   }
 
   // ② 撮影
+  if (!video.videoWidth || remaining <= 0) return;
+
   const ctx = canvas.getContext("2d");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
   ctx.drawImage(video, 0, 0);
 
-  alert("撮影OK");
+  remaining--;
+  counter.innerText = "NÚMERO RESTANTE: " + remaining;
+
+  alert("撮影OK！");
 };
 </script>
 
