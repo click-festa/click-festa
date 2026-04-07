@@ -190,7 +190,6 @@ viewBtn.onclick = () => window.location.href = "gallery.html?event=" + eventId;
 
 // 
 // --- 期間チェック（Firestore版） ---
-（async () =>{
   
   const eventRef = doc(db, "events", eventId);
 const eventSnap = await getDoc(eventRef);
@@ -216,7 +215,7 @@ if (!eventSnap.exists()) {
     throw new Error("ESTE EVENTO TERMINOU");
   }
 }
-})();
+
 
 </script>
 </body>
