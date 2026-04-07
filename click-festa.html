@@ -112,7 +112,7 @@ navigator.mediaDevices.getUserMedia({
 })
 .catch(err => {
   console.error(err);
-  alert("Erro ao acessar a câmera. Verifique se está usando HTTPS.");
+  alert(err.name + ": " + err.message);
 });
 
 // --- 撮影・加工・保存 ---
