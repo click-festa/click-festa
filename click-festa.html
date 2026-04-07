@@ -7,7 +7,7 @@
     video{
   width:100%;
   max-width:400px;
-  heigh: auto;
+  height: auto;
 }
   #shootBtn{
     position:fixed;
@@ -96,7 +96,7 @@ counter.innerText = "NÚMERO RESTANTE: " + remaining;
 
 // --- カメラ起動 ---
 navigator.mediaDevices.getUserMedia({ 
-  video: { facingMode: "environment" }, 
+  video: true, 
   audio: false 
 })
 .then(stream => {
@@ -190,7 +190,9 @@ viewBtn.onclick = () => window.location.href = "gallery.html?event=" + eventId;
 
 // 
 // --- 期間チェック（Firestore版） ---
-const eventRef = doc(db, "events", eventId);
+（async () =>{
+  
+  const eventRef = doc(db, "events", eventId);
 const eventSnap = await getDoc(eventRef);
 
 if (!eventSnap.exists()) {
@@ -214,6 +216,7 @@ if (!eventSnap.exists()) {
     throw new Error("ESTE EVENTO TERMINOU");
   }
 }
+})();
 
 </script>
 </body>
